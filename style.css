@@ -23,3 +23,11 @@ html, body {
   max-height: 90%;
 }
 
+.playlist-section {
+  background-color: #111;
+  padding: 50px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
