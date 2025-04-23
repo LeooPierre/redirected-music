@@ -25,7 +25,7 @@ html, body {
 }
 
 .playlist-section {
-  background-color: #111;
+  background-color: #000;
   padding: 50px 20px;
   display: flex;
   justify-content: center;
