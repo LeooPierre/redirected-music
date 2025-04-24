@@ -1,8 +1,17 @@
+@font-face {
+  font-family: 'Aylia';
+  src: url('assets/fonts/Aylia.otf') format('opentype');
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Aylia', sans-serif;
 }
 
 html, body {
@@ -36,10 +45,12 @@ html, body {
 
 .navbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background-color: #000; /* Black background */
   padding: 10px 20px;
+  font-weight: 600;
+  margin-top: 10px;
 }
 .navbar a {
   color: #fff; /* White text */
