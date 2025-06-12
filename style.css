@@ -29,6 +29,19 @@ html, body {
   justify-content: center;
 }
 
+.hero-content {
+  text-align: center;
+  color: #fff;
+}
+
+.contact-email {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 10px;
+  font-family: 'Inter', sans-serif;
+}
+
+
 .logo {
   max-width: 90%;
   max-height: 90%;
