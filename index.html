@@ -3,32 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redirected Music</title>
+  <meta name="description" content="Redirected explores music, culture, and the stories behind the creators. Studio collaborations and behind-the-scenes documentaries. Coming soon." />
+  <title>Redirected — Music, Culture &amp; Stories</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="navbar" aria-label="Main navigation">
     <a href="#artists">ARTISTS</a>
     <a href="#about">ABOUT</a>
-  </div>
-
-  <!-- Hero Section -->
-<div class="hero">
-  <div class="hero-content">
-    <img src="hero-logo.svg" alt="Redirected Music Logo" class="logo" />
-    <p class="contact-email">leonardo.sousa2003.ls@gmail.com</p>
-  </div>
-</div>
-
-
-  <!-- Spotify Section -->
-  <div class="playlist-section">
-    <!-- Replace the src with your actual playlist embed link -->
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/album/6SbgFO7RRuss5TLuk0S0wf?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-  </div>
+  </nav>
+  <main id="main">
+    <header class="hero">
+      <div class="hero-content">
+        <h1><img src="hero-logo.svg" alt="Redirected" class="logo" width="855" height="445" /></h1>
+        <a class="contact-email" href="mailto:leonardo.soares@redirectedmusic.com">leonardo.soares@redirectedmusic.com</a>
+      </div>
+    </header>
+    <section id="about" class="content-section" aria-labelledby="about-title">
+      <p class="eyebrow">Music. Culture. Stories.</p>
+      <h2 id="about-title">Behind the music.<br />Inside the process.</h2>
+      <p class="intro">Redirected is an upcoming podcast and documentary project exploring the people shaping music and culture. Honest conversations, creative turning points, and the work you rarely get to see.</p>
+      <div class="formats">
+        <article>
+          <p class="eyebrow">01 / In the studio</p>
+          <h3>Redirected Sessions</h3>
+          <p>Conversations become collaborations. Singers, rappers, producers, and songwriters share their stories and leave a creative seed — a hook, a beat, a melody — to grow into a collective track across the season.</p>
+        </article>
+        <article>
+          <p class="eyebrow">02 / Behind the scenes</p>
+          <h3>Redirected Backstage</h3>
+          <p>Follow DJs, promoters, and event organizers beyond the spotlight. From travel and soundchecks to the moments before a set, discover the people and work that bring a scene to life.</p>
+        </article>
+      </div>
+    </section>
+    <section id="artists" class="content-section" aria-labelledby="artists-title">
+      <p class="eyebrow">The people behind it</p>
+      <h2 id="artists-title">New stories are coming.</h2>
+      <p class="intro">Meet the artists and scene-builders of Redirected here as the project takes shape. Interested in being part of a future episode?</p>
+      <a class="text-link" href="mailto:leonardo.soares@redirectedmusic.com">Get in touch <span aria-hidden="true">↗</span></a>
+    </section>
+    <section class="content-section playlist-section" aria-labelledby="music-title">
+      <p class="eyebrow">Listen</p>
+      <h2 id="music-title">On the record.</h2>
+      <iframe title="Spotify album player" src="https://open.spotify.com/embed/album/6SbgFO7RRuss5TLuk0S0wf?utm_source=generator" width="100%" height="352" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <a class="text-link" href="https://open.spotify.com/album/6SbgFO7RRuss5TLuk0S0wf">Listen on Spotify <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+  <footer class="footer">
+    <p>Redirected</p>
+    <a href="mailto:leonardo.soares@redirectedmusic.com">leonardo.soares@redirectedmusic.com</a>
+  </footer>
 </body>
 </html>
