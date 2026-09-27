@@ -1,7 +1,7 @@
 import { Brand } from "@/components/Brand";
 import { IntakeForm } from "@/components/IntakeForm";
 import { findInvite } from "@/lib/store";
-import { calEventUrl, isDemo } from "@/lib/config";
+import { calEventUrls, isDemo } from "@/lib/config";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Your invitation",
@@ -39,7 +39,7 @@ export default async function InvitePage({
       token={token}
       invite={invite}
       demo={isDemo()}
-      calUrl={calEventUrl()}
+      calUrls={calEventUrls()}
     />
   );
 }

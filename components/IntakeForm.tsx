@@ -43,12 +43,12 @@ export function IntakeForm({
   token,
   invite,
   demo,
-  calUrl,
+  calUrls,
 }: {
   token: string;
   invite: GuestInvite;
   demo: boolean;
-  calUrl: string | null;
+  calUrls: { discussion: string | null; Sessions: string | null; Backstage: string | null };
 }) {
   const [step, setStep] = useState(0),
     [draft, setDraft] = useState<Draft>({
@@ -62,6 +62,17 @@ export function IntakeForm({
     [showCalendar, setShowCalendar] = useState(false),
     [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
+  const booking = draft.pre_prod_call_requested
+    ? {
+        url: calUrls.discussion,
+        title: "Book your pre-production discussion.",
+        copy: "Choose a 30-minute time to discuss ideas and concepts. Leonardo will follow up with the recording calendar after your conversation.",
+      }
+    : {
+        url: calUrls[invite.format_type],
+        title: `Book your ${invite.format_type} shoot.`,
+        copy: "Choose an available recording time. Your booking remains subject to Leonardo’s confirmation.",
+      };
   useEffect(() => {
     heading.current?.focus();
   }, [step, done]);
@@ -241,18 +252,14 @@ export function IntakeForm({
                 </div>
               ) : (
                 <div className="calendar-panel">
-                  <h3>Find your time.</h3>
-                  {calUrl && !demo ? (
+                  <h3>{booking.title}</h3>
+                  {booking.url && !demo ? (
                     <>
-                      <p>
-                        Choose from Leonardo’s availability on Cal.com. Check
-                        the booking confirmation there; this form does not
-                        confirm or reserve a time.
-                      </p>
+                      <p>{booking.copy}</p>
                       {showCalendar ? (
                         <iframe
                           title="Choose an available time on Cal.com"
-                          src={calUrl}
+                          src={booking.url}
                           referrerPolicy="no-referrer"
                           className="calendar-frame"
                         />
@@ -266,18 +273,18 @@ export function IntakeForm({
                       )}
                       <a
                         className="text-link"
-                        href={calUrl}
+                        href={booking.url}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Open Cal.com in a new tab ↗
+                        Open this calendar in a new tab ↗
                       </a>
                     </>
                   ) : (
                     <>
                       <p>
-                        Leonardo’s calendar will appear here once Cal.com is
-                        connected. No date has been booked during this test.
+                        The correct Cal.com calendar will appear here outside
+                        local demo mode. No date has been booked during this test.
                       </p>
                       <div className="calendar-placeholder">
                         <span>CALENDAR COMING SOON</span>
@@ -289,8 +296,8 @@ export function IntakeForm({
               )}
               {draft.pre_prod_call_requested && (
                 <p className="notice">
-                  Your request for a pre-production call is noted. Leonardo will
-                  arrange it with you separately.
+                  Your request for a pre-production discussion is noted. Use the
+                  30-minute calendar above to choose a time.
                 </p>
               )}
               <a className="text-link" href="/">
@@ -618,7 +625,9 @@ export function IntakeForm({
                       <dd>
                         {invite.already_recorded
                           ? "Already recorded — no scheduling needed"
-                          : "Choose a time after submitting, once the calendar is ready"}
+                          : draft.pre_prod_call_requested
+                            ? "Choose a 30-minute discussion after submitting"
+                            : `Choose a ${invite.format_type} shoot time after submitting`}
                       </dd>
                     </div>
                   </dl>

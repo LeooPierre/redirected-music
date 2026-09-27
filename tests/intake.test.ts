@@ -9,7 +9,7 @@ import {
 import { DemoStore } from "../lib/demo-store";
 import { demoSessionsToken } from "../lib/demo-links";
 import { activeInvite, hashToken, newToken } from "../lib/tokens";
-import { isDemo, calEventUrl } from "../lib/config";
+import { isDemo, calEventUrls } from "../lib/config";
 import { checkOrigin, readJson } from "../lib/http";
 export const valid = {
   artist_name: "Sample guest",
@@ -124,19 +124,19 @@ test("production cannot enable demo authentication", () => {
   Object.assign(process.env, prev);
 });
 test("Cal.com URL config rejects unrelated hosts and credentials", () => {
-  const previous = process.env.CAL_EVENT_URL;
+  const previous = process.env.CAL_DISCUSSION_URL;
   for (const url of [
     "https://example.com/calendar",
     "https://evil.cal.com/event",
     "https://name:pass@cal.com/name/event",
   ]) {
-    process.env.CAL_EVENT_URL = url;
-    assert.equal(calEventUrl(), null);
+    process.env.CAL_DISCUSSION_URL = url;
+    assert.equal(calEventUrls().discussion, null);
   }
-  process.env.CAL_EVENT_URL = "https://cal.com/leonardo/redirected";
-  assert.equal(calEventUrl(), process.env.CAL_EVENT_URL);
-  if (previous === undefined) delete process.env.CAL_EVENT_URL;
-  else process.env.CAL_EVENT_URL = previous;
+  process.env.CAL_DISCUSSION_URL = "https://cal.com/leonardo/redirected";
+  assert.equal(calEventUrls().discussion, process.env.CAL_DISCUSSION_URL);
+  if (previous === undefined) delete process.env.CAL_DISCUSSION_URL;
+  else process.env.CAL_DISCUSSION_URL = previous;
 });
 test("mutation origin and bounded JSON checks reject cross-site and oversized input", async () => {
   process.env.APP_URL = "http://127.0.0.1:3000";

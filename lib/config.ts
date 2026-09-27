@@ -12,9 +12,9 @@ export function isConfigured() {
     process.env.ADMIN_USER_ID
   );
 }
-export function calEventUrl() {
+function validCalUrl(value: string) {
   try {
-    const url = new URL(process.env.CAL_EVENT_URL || "");
+    const url = new URL(value);
     return url.protocol === "https:" &&
       url.hostname === "cal.com" &&
       !url.username &&
@@ -25,4 +25,17 @@ export function calEventUrl() {
   } catch {
     return null;
   }
+}
+export function calEventUrls() {
+  return {
+    discussion: validCalUrl(
+      process.env.CAL_DISCUSSION_URL || "https://cal.com/leonardoredirected/30min",
+    ),
+    Sessions: validCalUrl(
+      process.env.CAL_SESSIONS_URL || "https://cal.com/leonardoredirected/redirected-sessions-recording",
+    ),
+    Backstage: validCalUrl(
+      process.env.CAL_BACKSTAGE_URL || "https://cal.com/leonardoredirected/redirected-backstage-recording",
+    ),
+  };
 }

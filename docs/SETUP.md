@@ -38,7 +38,9 @@ SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 SUPABASE_SECRET_KEY=YOUR_SERVER_SECRET_KEY
 ADMIN_USER_ID=YOUR_USER_UUID
-CAL_EVENT_URL=https://cal.com/YOUR_ACCOUNT/YOUR_EVENT
+CAL_DISCUSSION_URL=https://cal.com/leonardoredirected/30min
+CAL_SESSIONS_URL=https://cal.com/leonardoredirected/redirected-sessions-recording
+CAL_BACKSTAGE_URL=https://cal.com/leonardoredirected/redirected-backstage-recording
 ```
 
 The Supabase Connect/API settings provide the project URL and API keys. A legacy anon key can fill `SUPABASE_PUBLISHABLE_KEY`; a legacy service-role key can fill `SUPABASE_SECRET_KEY`. Never put the secret/service-role key in a `NEXT_PUBLIC_` variable, commit it, or paste it into a guest form. `.env.local` is ignored by Git.
@@ -51,9 +53,9 @@ Restart the dev server after changing environment variables. Open `/admin/login`
 
 ## 4. Cal.com availability
 
-Create one event type for a Redirected shoot. Configure your real available hours, connected calendar conflict checks, timezone, duration, minimum notice and buffers in Cal.com. If you want final approval, enable **Requires Confirmation** for the event. Guests can then choose an available slot, subject to your approval.
+Configure the three Redirected event types with your real available hours, connected calendar conflict checks, timezone, duration, minimum notice and buffers in Cal.com. If you want final approval, enable **Requires Confirmation** for the recording events.
 
-Put that event's public `https://cal.com/<account>/<event>` URL into `CAL_EVENT_URL`. The form shows scheduling after a successful submission, so no guest has to book before completing their intake. The guest actively opens the calendar; a separate link is provided if the embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
+The supplied public links are the defaults and can be overridden through the three `CAL_*_URL` variables. After submission, a guest who requested a pre-production discussion sees the 30-minute event. A guest who did not request one sees the Sessions or Backstage recording event that matches the invitation. The guest actively opens the calendar; a separate link is provided if the embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
 
 - An already-recorded invitation shows no booking calendar.
 - A requested pre-production call is tracked separately from the shoot; arrange it with the guest for now.
