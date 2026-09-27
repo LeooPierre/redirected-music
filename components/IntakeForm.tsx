@@ -59,20 +59,27 @@ export function IntakeForm({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState(false),
-    [showCalendar, setShowCalendar] = useState(false),
+    [openCalendar, setOpenCalendar] = useState<string | null>(null),
     [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
-  const booking = draft.pre_prod_call_requested
-    ? {
+  const bookings = [
+    ...(draft.pre_prod_call_requested
+      ? [{
+        id: "discussion",
         url: calUrls.discussion,
         title: "Book your pre-production discussion.",
-        copy: "Choose a 30-minute time to discuss ideas and concepts. Leonardo will follow up with the recording calendar after your conversation.",
-      }
-    : {
+        copy: "Choose a 30-minute time to discuss ideas and concepts before the shoot.",
+      }]
+      : []),
+    ...(!invite.already_recorded
+      ? [{
+        id: "shoot",
         url: calUrls[invite.format_type],
         title: `Book your ${invite.format_type} shoot.`,
         copy: "Choose an available recording time. Your booking remains subject to Leonardo’s confirmation.",
-      };
+      }]
+      : []),
+  ];
   useEffect(() => {
     heading.current?.focus();
   }, [step, done]);
@@ -242,7 +249,7 @@ export function IntakeForm({
                 answers. Your profile is private and no content release has been
                 signed.
               </p>
-              {invite.already_recorded ? (
+              {invite.already_recorded && (
                 <div className="notice">
                   <strong>Your episode is already recorded.</strong>
                   <p>
@@ -250,15 +257,22 @@ export function IntakeForm({
                     the next steps.
                   </p>
                 </div>
-              ) : (
-                <div className="calendar-panel">
+              )}
+              {demo && bookings.length > 0 && (
+                <p className="notice">
+                  These are your live Cal.com calendars. Only complete a booking
+                  if you want to reserve a real time.
+                </p>
+              )}
+              {bookings.map((booking) => (
+                <div className="calendar-panel" key={booking.id}>
                   <h3>{booking.title}</h3>
-                  {booking.url && !demo ? (
+                  {booking.url ? (
                     <>
                       <p>{booking.copy}</p>
-                      {showCalendar ? (
+                      {openCalendar === booking.id ? (
                         <iframe
-                          title="Choose an available time on Cal.com"
+                          title={booking.title}
                           src={booking.url}
                           referrerPolicy="no-referrer"
                           className="calendar-frame"
@@ -266,7 +280,7 @@ export function IntakeForm({
                       ) : (
                         <button
                           className="button primary"
-                          onClick={() => setShowCalendar(true)}
+                          onClick={() => setOpenCalendar(booking.id)}
                         >
                           Show available dates ↗
                         </button>
@@ -283,8 +297,8 @@ export function IntakeForm({
                   ) : (
                     <>
                       <p>
-                        The correct Cal.com calendar will appear here outside
-                        local demo mode. No date has been booked during this test.
+                        This Cal.com event is not configured yet. Please contact
+                        Leonardo to arrange a time.
                       </p>
                       <div className="calendar-placeholder">
                         <span>CALENDAR COMING SOON</span>
@@ -293,13 +307,7 @@ export function IntakeForm({
                     </>
                   )}
                 </div>
-              )}
-              {draft.pre_prod_call_requested && (
-                <p className="notice">
-                  Your request for a pre-production discussion is noted. Use the
-                  30-minute calendar above to choose a time.
-                </p>
-              )}
+              ))}
               <a className="text-link" href="/">
                 Back to Redirected ↗
               </a>

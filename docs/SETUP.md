@@ -55,9 +55,9 @@ Restart the dev server after changing environment variables. Open `/admin/login`
 
 Configure the three Redirected event types with your real available hours, connected calendar conflict checks, timezone, duration, minimum notice and buffers in Cal.com. If you want final approval, enable **Requires Confirmation** for the recording events.
 
-The supplied public links are the defaults and can be overridden through the three `CAL_*_URL` variables. After submission, a guest who requested a pre-production discussion sees the 30-minute event. A guest who did not request one sees the Sessions or Backstage recording event that matches the invitation. The guest actively opens the calendar; a separate link is provided if the embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
+The supplied public links are the defaults and can be overridden through the three `CAL_*_URL` variables. After submission, a guest who requested a pre-production discussion sees the 30-minute event followed by the recording event that matches the invitation. A guest who did not request one goes directly to the matching recording event. The live calendars also appear in local demo mode so the complete flow can be tested. The guest actively opens each calendar; a separate link is provided if an embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
 
-- An already-recorded invitation shows no booking calendar.
+- An already-recorded invitation skips the shoot calendar; if a discussion was requested, its 30-minute calendar still appears.
 - A requested pre-production call is tracked separately from the shoot; arrange it with the guest for now.
 - Booking confirmation, rescheduling and cancellation happen in Cal.com.
 - This version does **not** trust iframe events or guest-supplied timestamps as a confirmed booking. Record the confirmed shoot date manually in the admin dashboard. Its field uses your browser's local timezone, converting to UTC for storage.
