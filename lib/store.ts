@@ -13,6 +13,7 @@ import {
   type Intake,
   type Invite,
   type PublicArtist,
+  type MediaUpload,
   type inviteSchema,
   type artistPatchSchema,
 } from "./models";
@@ -73,7 +74,7 @@ export async function createInvite(values: z.infer<typeof inviteSchema>) {
   }
   return { id: invite.id, token, expires_at: invite.expires_at };
 }
-export async function submitGuest(token: string, value: Intake) {
+export async function submitGuest(token: string, value: Intake, media_uploads: MediaUpload[]) {
   if (!validToken(token))
     throw new HttpError(
       410,
@@ -81,11 +82,11 @@ export async function submitGuest(token: string, value: Intake) {
     );
   const intake = cleanIntake(value);
   let id: string | null;
-  if (isDemo()) id = demo().consume(hashToken(token), intake);
+  if (isDemo()) id = demo().consume(hashToken(token), intake, media_uploads);
   else {
     const { data, error } = await database().rpc("submit_invited_artist", {
       p_token_hash: hashToken(token),
-      p_data: intake,
+      p_data: { ...intake, media_uploads },
     });
     if (error) {
       if (error.message.includes("invitation_unavailable"))
@@ -190,7 +191,7 @@ export async function publicArtists(): Promise<PublicArtist[]> {
   const { data, error } = await database()
     .from("artist_profiles")
     .select(
-      "id,artist_name,format_type,season_number,short_bio,linktree_url,spotify_embed_url",
+      "id,artist_name,format_type,season_number,linktree_url",
     )
     .order("artist_name");
   if (error) throw error;

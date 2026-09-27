@@ -5,7 +5,7 @@ export default function Home() {
         Skip to content
       </a>
       <nav className="navbar" aria-label="Main navigation">
-        <a href="#artists">ARTISTS</a>
+        <a href="/artists">ARTISTS</a>
         <a href="#about">ABOUT</a>
       </nav>
       <main id="main">

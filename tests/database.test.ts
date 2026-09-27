@@ -9,7 +9,9 @@ const input = intakeSchema.parse({
   email: "guest@example.com",
   format_type: "Sessions",
   linktree_url: "https://example.com",
-  short_bio: "A sample biography.",
+  press_kit_url: "https://example.com/press-kit",
+  musical_roles: ["Producer"],
+  session_plan: "Create a new original song",
   pre_prod_call_requested: true,
   test_acknowledged: true,
   off_limit_topics: "Private production note",
@@ -18,7 +20,7 @@ test("PostgreSQL migration: atomic invitations, release gate, private RLS and pu
   const db = new PGlite();
   try {
     await db.exec(
-      "create role anon; create role authenticated; create role service_role bypassrls; grant usage on schema public to anon, authenticated, service_role;",
+      "create role anon; create role authenticated; create role service_role bypassrls; grant usage on schema public to anon, authenticated, service_role; create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);",
     );
     await db.exec(
       await readFile(
@@ -106,7 +108,8 @@ test("PostgreSQL migration: atomic invitations, release gate, private RLS and pu
           fresh,
           JSON.stringify({
             ...input,
-            short_bio: Array(101).fill("word").join(" "),
+            press_kit_url: "",
+            media_uploads: [],
           }),
         ],
       ),

@@ -391,6 +391,7 @@ export function Dashboard({
                     <tr>
                       <th>Guest</th>
                       <th>Format</th>
+                      <th>Musician type</th>
                       <th>Call</th>
                       <th>Profile</th>
                       <th>
@@ -410,6 +411,13 @@ export function Dashboard({
                         </td>
                         <td>
                           <span className="format-badge">{a.format_type}</span>
+                        </td>
+                        <td>
+                          <span className="format-badge">
+                            {a.format_type === "Sessions"
+                              ? [...a.musical_roles.filter((role) => role !== "Other"), ...(a.other_musical_role ? [a.other_musical_role] : [])].join(", ") || "—"
+                              : "—"}
+                          </span>
                         </td>
                         <td>
                           <span
@@ -556,19 +564,19 @@ export function Dashboard({
                   {[
                     ["Full name", active.government_name],
                     ["Email", active.email],
-                    ["Bio", active.short_bio],
                     ["Redirected moment", active.redirected_moment],
                     ["Episode focus", active.feature_promotion_focus],
                     ["Inspirations", active.musical_inspirations],
                     ["Roles", active.musical_roles.join(", ")],
+                    ["Other musical role", active.other_musical_role],
                     ["Creative superpower", active.creative_superpower],
-                    ["Collaboration", active.collaboration_style],
+                    ["Session music plan", active.session_plan],
                     ["Studio preferences", active.technical_preferences],
                     ["Venue / location", active.backstage_location],
                     ["Access / logistics", active.backstage_access],
                     ["Event timeline", active.backstage_timeline],
                     ["Off-limit topics", active.off_limit_topics],
-                    ["Food / access needs", active.dietary_preferences],
+                    ["Drink, snack or access needs", active.dietary_preferences],
                     ["Other notes", active.other_comments],
                   ]
                     .filter(([, v]) => v)
@@ -600,6 +608,17 @@ export function Dashboard({
                       Private media folder ↗
                     </a>
                   )}
+                  {(active.media_uploads || []).map((file) => (
+                    <a
+                      className="text-link"
+                      href={`/api/admin/media?path=${encodeURIComponent(file.path)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      key={file.path}
+                    >
+                      {file.name} ↗
+                    </a>
+                  ))}
                 </div>
               </div>
               <div className="production-controls">

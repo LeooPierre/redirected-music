@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Artist, Intake, Invite } from "./models";
+import type { Artist, Intake, Invite, MediaUpload } from "./models";
 import { activeInvite, hashToken } from "./tokens";
 import { demoSessionsToken, demoRecordedToken } from "./demo-links";
 export class DemoStore {
@@ -31,7 +31,7 @@ export class DemoStore {
       revoked_at: null,
     }));
   }
-  consume(tokenHash: string, intake: Intake) {
+  consume(tokenHash: string, intake: Intake, media_uploads: MediaUpload[] = []) {
     const invite = this.invites.find((i) => i.token_hash === tokenHash);
     if (
       !invite ||
@@ -61,6 +61,7 @@ export class DemoStore {
       referral_code: randomUUID(),
       membership_tier: "cohort",
       alumni_subscription_status: "inactive",
+      media_uploads,
     };
     this.artists.unshift(artist);
     invite.used_at = now;

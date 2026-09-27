@@ -3,7 +3,9 @@ import { useRef, useState, useEffect } from "react";
 import { Brand, TestBanner } from "./Brand";
 import {
   intakeSchema,
+  profileStepSchema,
   roleOptions,
+  sessionPlanOptions,
   type GuestInvite,
   type Intake,
 } from "@/lib/models";
@@ -20,14 +22,13 @@ const empty = {
   email: "",
   linktree_url: "",
   press_kit_url: "",
-  spotify_embed_url: "",
-  short_bio: "",
   redirected_moment: "",
   feature_promotion_focus: "",
   musical_inspirations: "",
   musical_roles: [],
+  other_musical_role: "",
   creative_superpower: "",
-  collaboration_style: "",
+  session_plan: "" as const,
   technical_preferences: "",
   backstage_location: "",
   backstage_access: "",
@@ -58,7 +59,8 @@ export function IntakeForm({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [done, setDone] = useState(false),
-    [showCalendar, setShowCalendar] = useState(false);
+    [showCalendar, setShowCalendar] = useState(false),
+    [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
@@ -66,7 +68,6 @@ export function IntakeForm({
   function field<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
   }
-  const words = draft.short_bio.trim().split(/\s+/).filter(Boolean).length;
   const textField = (
     key: keyof Draft,
     label: string,
@@ -107,31 +108,39 @@ export function IntakeForm({
     e.preventDefault();
     setError("");
     if (step === 1) {
-      const result = intakeSchema
-        .pick({
-          artist_name: true,
-          government_name: true,
-          email: true,
-          linktree_url: true,
-          press_kit_url: true,
-          spotify_embed_url: true,
-        })
-        .safeParse({
+      const result = profileStepSchema.safeParse({
           artist_name: draft.artist_name,
           government_name: draft.government_name,
           email: draft.email,
           linktree_url: draft.linktree_url,
           press_kit_url: draft.press_kit_url,
-          spotify_embed_url: draft.spotify_embed_url,
-        });
+      });
       if (!result.success) {
         setError(result.error.issues[0].message);
         return;
       }
+      if (!draft.press_kit_url && mediaFiles.length === 0) {
+        setError("Add a photos or press-kit link, or upload at least one file.");
+        return;
+      }
+      if (mediaFiles.length > 10 || mediaFiles.some((file) => file.size > 10 * 1024 * 1024) || mediaFiles.reduce((sum, file) => sum + file.size, 0) > 25 * 1024 * 1024) {
+        setError("Choose up to 10 files, no more than 10 MB each and 25 MB total.");
+        return;
+      }
     }
-    if (step === 2 && (!words || words > 100)) {
-      setError("Please add a bio of 1–100 words.");
-      return;
+    if (step === 3 && invite.format_type === "Sessions") {
+      if (draft.musical_roles.length === 0) {
+        setError("Choose at least one musical role.");
+        return;
+      }
+      if (draft.musical_roles.includes("Other") && !draft.other_musical_role.trim()) {
+        setError("Tell us what your other musical role is.");
+        return;
+      }
+      if (!draft.session_plan) {
+        setError("Choose how you would like to approach the song.");
+        return;
+      }
     }
     if (step < 4) {
       setStep(step + 1);
@@ -144,10 +153,13 @@ export function IntakeForm({
     }
     setBusy(true);
     try {
+      const body = new FormData();
+      body.set("token", token);
+      body.set("intake", JSON.stringify(result.data));
+      mediaFiles.forEach((file) => body.append("media", file));
       const r = await fetch("/api/artists", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, intake: result.data }),
+        body,
       });
       const data = await r.json();
       if (!r.ok) throw Error(data.error);
@@ -388,45 +400,47 @@ export function IntakeForm({
                     max: 1000,
                     hint: "Linktree, Feature.fm, Instagram, a website — wherever your work lives.",
                   })}
-                  {textField("press_kit_url", "Photos, videos, or press kit", {
+                  {textField("press_kit_url", "Photos or press-kit link", {
                     type: "url",
                     max: 1000,
-                    hint: "A media-folder or press-kit link. Please give Leonardo viewing access; don’t include passwords here. This link stays private.",
+                    hint: "Provide this link or upload files below. Please give Leonardo viewing access. You can send more later if needed.",
                   })}
-                  {textField("spotify_embed_url", "Spotify link", {
-                    type: "url",
-                    max: 1000,
-                    hint: "An artist, album, track, or playlist URL — not embed code.",
-                  })}
+                  <label>
+                    Upload photos or a press kit
+                    <span className="optional">Required if no link</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.doc,.docx,.zip"
+                      onChange={(event) => setMediaFiles(Array.from(event.target.files || []))}
+                    />
+                    <span className="hint">
+                      Up to 10 JPG, PNG, WEBP, HEIC, PDF, Word, or ZIP files; 10 MB each and 25 MB total. Files stay private. You can send more later if needed.
+                    </span>
+                  </label>
                 </>
               )}
               {step === 2 && (
                 <>
-                  {textField("short_bio", "A short introduction", {
-                    required: true,
-                    multiline: true,
-                    max: 3000,
-                    hint: `${words}/100 words · This may become your public bio, only after a future release and your profile is approved.`,
-                  })}
                   {textField(
                     "redirected_moment",
-                    "What was your “redirected” moment?",
+                    "What was a turning point in your life that connected you more deeply with music?",
                     {
                       multiline: true,
-                      hint: "A turning point, a change of direction, or the moment things started to click.",
+                      hint: "Think of a moment of realization or a change in direction that shaped your relationship with music. That is what we call your “Redirected” moment.",
                     },
                   )}
                   {textField(
                     "feature_promotion_focus",
-                    "What would you like this episode to explore?",
+                    "Is there anything you would like to promote?",
                     {
                       multiline: true,
-                      hint: "A project, a question, a part of your world people don’t usually see.",
+                      hint: "A single, album, upcoming project, event, or anything else you want people to discover.",
                     },
                   )}
                   {textField(
                     "musical_inspirations",
-                    "Who or what inspires you?",
+                    "Who or what inspires you musically?",
                     { multiline: true },
                   )}
                 </>
@@ -437,8 +451,8 @@ export function IntakeForm({
                     <>
                       <fieldset>
                         <legend>
-                          Your musical roles{" "}
-                          <span className="optional">Optional</span>
+                          What kind of musician are you?{" "}
+                          <span className="optional">Required</span>
                         </legend>
                         <div className="role-options">
                           {roleOptions.map((role) => (
@@ -462,16 +476,41 @@ export function IntakeForm({
                           ))}
                         </div>
                       </fieldset>
+                      {draft.musical_roles.includes("Other") &&
+                        textField("other_musical_role", "Your other musical role", {
+                          required: true,
+                          max: 120,
+                        })}
                       {textField(
                         "creative_superpower",
-                        "Your creative superpower",
-                        { multiline: true },
+                        "What is your biggest strength when creating music?",
+                        {
+                          multiline: true,
+                          hint: "For example: drums, melodies, songwriting, singing, arrangement, or performance.",
+                        },
                       )}
-                      {textField(
-                        "collaboration_style",
-                        "How do you like to collaborate?",
-                        { multiline: true },
-                      )}
+                      <fieldset>
+                        <legend>
+                          How would you like to approach the music during your episode?{" "}
+                          <span className="optional">Required</span>
+                        </legend>
+                        <p className="hint">
+                          A Redirected Sessions episode usually creates an entire song together — from the beat and musical foundation to vocals.
+                        </p>
+                        <div className="session-plan-options">
+                          {sessionPlanOptions.map((option) => (
+                            <label className="role-chip" key={option}>
+                              <input
+                                type="radio"
+                                name="session_plan"
+                                checked={draft.session_plan === option}
+                                onChange={() => field("session_plan", option)}
+                              />
+                              {option}
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
                       {textField(
                         "technical_preferences",
                         "Your studio setup & preferences",
@@ -527,8 +566,8 @@ export function IntakeForm({
                     },
                   )}
                   {!invite.already_recorded &&
-                    textField("dietary_preferences", "Food or access needs", {
-                      hint: "Only share what will help us prepare.",
+                    textField("dietary_preferences", "Any favourite drink or snack for the shoot?", {
+                      hint: "You can also mention dietary or access needs that will help us prepare.",
                     })}
                   {textField(
                     "other_comments",
@@ -563,8 +602,8 @@ export function IntakeForm({
                       <dd>{draft.linktree_url}</dd>
                     </div>
                     <div>
-                      <dt>Bio</dt>
-                      <dd>{draft.short_bio}</dd>
+                      <dt>Photos / press kit</dt>
+                      <dd>{draft.press_kit_url || `${mediaFiles.length} file${mediaFiles.length === 1 ? "" : "s"} selected`}</dd>
                     </div>
                     <div>
                       <dt>Pre-production call</dt>

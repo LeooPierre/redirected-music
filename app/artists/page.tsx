@@ -33,7 +33,7 @@ export default async function ArtistsPage() {
                   {a.format_type} · Season {a.season_number}
                 </span>
                 <h2>{a.artist_name} ↗</h2>
-                <p>{a.short_bio}</p>
+                <p>Explore their profile and work.</p>
               </Link>
             ))}
           </div>

@@ -5,7 +5,6 @@ import {
   cleanIntake,
   publicProfile,
   canPublish,
-  spotifyEmbed,
 } from "../lib/models";
 import { DemoStore } from "../lib/demo-store";
 import { demoSessionsToken } from "../lib/demo-links";
@@ -18,13 +17,15 @@ export const valid = {
   email: "sample@example.com",
   format_type: "Sessions",
   linktree_url: "https://example.com/guest",
-  short_bio: "A fictional musician used to test the form.",
+  press_kit_url: "https://example.com/press-kit",
+  musical_roles: ["Producer"],
+  session_plan: "Create a new original song",
   pre_prod_call_requested: false,
   test_acknowledged: true,
 };
-test("valid intake supports any profile URL and optional media folder", () => {
+test("valid intake supports profile and press-kit links", () => {
   const a = intakeSchema.parse(valid);
-  assert.equal(a.press_kit_url, "");
+  assert.equal(a.press_kit_url, "https://example.com/press-kit");
   assert.equal(a.email, "sample@example.com");
 });
 test("forged publication and release fields are rejected", () => {
@@ -37,11 +38,12 @@ test("forged publication and release fields are rejected", () => {
     false,
   );
 });
-test("unsafe links, excessive bios, and false test acknowledgements are rejected", () => {
+test("unsafe links, missing session details, and false test acknowledgements are rejected", () => {
   for (const change of [
     { linktree_url: "javascript:alert(1)" },
     { press_kit_url: "https://user:secret@example.com" },
-    { short_bio: Array(101).fill("word").join(" ") },
+    { musical_roles: [] },
+    { session_plan: "" },
     { test_acknowledged: false },
   ])
     assert.equal(
@@ -49,26 +51,18 @@ test("unsafe links, excessive bios, and false test acknowledgements are rejected
       false,
     );
 });
-test("Spotify accepts only supported Spotify URLs, never arbitrary iframe code", () => {
-  assert.equal(
-    spotifyEmbed(
-      "https://open.spotify.com/album/6SbgFO7RRuss5TLuk0S0wf?si=secret",
-    ),
-    "https://open.spotify.com/embed/album/6SbgFO7RRuss5TLuk0S0wf",
-  );
-  assert.equal(spotifyEmbed("https://evil.example/embed/abc"), null);
-  assert.equal(spotifyEmbed('<iframe src="evil"></iframe>'), null);
-});
 test("hidden format answers are removed on the server", () => {
   const a = cleanIntake(
     intakeSchema.parse({
       ...valid,
       format_type: "Backstage",
       musical_roles: ["Producer"],
+      session_plan: "Create a new original song",
       technical_preferences: "private old answer",
     }),
   );
   assert.deepEqual(a.musical_roles, []);
+  assert.equal(a.session_plan, "");
   assert.equal(a.technical_preferences, "");
 });
 test("invitation tokens are random, hashed and single-use", () => {

@@ -9,8 +9,9 @@ Open the project's SQL Editor and run `supabase/migrations/001_invited_guests.sq
 The migration creates:
 
 - `invitations`: 14-day, single-use, revocable invitations. Only a SHA-256 hash of each 256-bit random token is stored.
-- `artists`: private intake submissions. Includes the requested artist fields plus email, invitation reference, recorded/test state, Backstage logistics and release metadata. `press_kit_url` is optional; `linktree_url` accepts any main social/profile URL despite its historical field name.
-- `artist_profiles`: only the seven publicly allowed fields. A trigger maintains this table when an eligible artist is published/unpublished. No email, legal name, private production notes, or media-folder URL can appear here.
+- `artists`: private intake submissions. Includes the requested artist fields plus email, invitation reference, recorded/test state, Backstage logistics, private upload metadata and release metadata. Each guest provides either `press_kit_url` or one or more uploads; `linktree_url` accepts any main social/profile URL despite its historical field name.
+- `artist_profiles`: only the explicitly public identity, format, season and profile-link fields. A trigger maintains this table when an eligible artist is published/unpublished. No email, legal name, private production notes, uploads or media-folder URL can appear here.
+- `guest-media`: a private Supabase Storage bucket for photos and press kits. Files are limited to 10 MB each; the form also caps a submission at 10 files and 25 MB total. Dashboard downloads use five-minute signed links after admin authentication.
 - `submit_invited_artist`: a server-only transaction that locks an invitation, checks validity/format, inserts a submission and consumes the invitation atomically. Failure rolls back the entire operation.
 
 RLS is enabled on every table. `anon` and `authenticated` have no permissions to read or mutate private tables or call the submission function. The service-role/secret client is used only on the Next.js server after invitation validation or an admin identity check. Public roles may read the public profile table only.
@@ -52,7 +53,7 @@ Restart the dev server after changing environment variables. Open `/admin/login`
 
 Create one event type for a Redirected shoot. Configure your real available hours, connected calendar conflict checks, timezone, duration, minimum notice and buffers in Cal.com. If you want final approval, enable **Requires Confirmation** for the event. Guests can then choose an available slot, subject to your approval.
 
-Put that event's `https://cal.com/<account>/<event>` URL into `CAL_EVENT_URL`. The form shows scheduling after a successful submission, so no guest has to book before completing their intake. The guest actively opens the calendar; a separate link is provided if the embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
+Put that event's public `https://cal.com/<account>/<event>` URL into `CAL_EVENT_URL`. The form shows scheduling after a successful submission, so no guest has to book before completing their intake. The guest actively opens the calendar; a separate link is provided if the embed does not load. The invitation token and private answers are not passed to Cal.com. The app sets `Referrer-Policy: no-referrer` as well.
 
 - An already-recorded invitation shows no booking calendar.
 - A requested pre-production call is tracked separately from the shoot; arrange it with the guest for now.
@@ -82,7 +83,7 @@ No legal release text is fabricated here. All invitations created by the app are
 
 Before live intake: supply reviewed release/privacy wording, implement the versioned acceptance step (including timestamp), review data-retention and guest correction/deletion procedures, add a new migration/API path for non-test invitations, and test it against Supabase. Never convert a test acknowledgement into a release acceptance. Collect any necessary new consent explicitly from the guest.
 
-The public directory infrastructure and publish/unpublish trigger are included and tested using isolated future-release fixtures, but are deliberately inaccessible to test submissions. Image uploads, artist account editing, email automation/outbox delivery, Cal.com webhooks, payments and referral payouts remain future phases.
+The public directory infrastructure and publish/unpublish trigger are included and tested using isolated future-release fixtures, but are deliberately inaccessible to test submissions. Artist account editing, email automation/outbox delivery, Cal.com webhooks, payments and referral payouts remain future phases.
 
 ## 7. Recovery and maintenance
 

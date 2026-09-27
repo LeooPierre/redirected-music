@@ -9,6 +9,14 @@ async function api(path, method, body, origin = base) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 }
+async function submit(token, intake, origin = base) {
+  const body = new FormData();
+  body.set("token", token);
+  body.set("intake", JSON.stringify(intake));
+  if (!intake.press_kit_url)
+    body.append("media", new File(["sample"], "press-kit.pdf", { type: "application/pdf" }));
+  return fetch(base + "/api/artists", { method: "POST", headers: { Origin: origin }, body });
+}
 assert.match(
   await (await fetch(base + "/admin")).text(),
   /LOCAL DEMO/,
@@ -29,33 +37,25 @@ const intake = {
   email: "test@example.com",
   format_type: "Backstage",
   linktree_url: "https://example.com",
-  short_bio: "An automated fictional guest.",
+  press_kit_url: "",
   pre_prod_call_requested: false,
   test_acknowledged: true,
 };
 assert.equal(
   (
-    await api(
-      "/api/artists",
-      "POST",
-      { token, intake },
-      "https://other.example",
-    )
+    await submit(token, intake, "https://other.example")
   ).status,
   403,
 );
 assert.equal(
   (
-    await api("/api/artists", "POST", {
-      token,
-      intake: { ...intake, profile_live_status: true },
-    })
+    await submit(token, { ...intake, profile_live_status: true })
   ).status,
   400,
 );
 const statuses = await Promise.all([
-  api("/api/artists", "POST", { token, intake }),
-  api("/api/artists", "POST", { token, intake }),
+  submit(token, intake),
+  submit(token, intake),
 ]);
 assert.deepEqual(statuses.map((r) => r.status).sort(), [201, 410]);
 assert.match(await (await fetch(url)).text(), /This link is unavailable/);

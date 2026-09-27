@@ -26,24 +26,13 @@ const link = z
   .max(1000)
   .refine(safeWebUrl, "Enter a full https:// link.");
 const optionalLink = z.union([z.literal(""), link]).default("");
-export function spotifyEmbed(value: string) {
-  if (!value) return "";
-  try {
-    const u = new URL(value);
-    if (u.protocol !== "https:" || u.hostname !== "open.spotify.com")
-      return null;
-    const match = u.pathname.match(
-      /^\/(?:embed\/)?(artist|album|track|playlist)\/([A-Za-z0-9]{22})\/?$/,
-    );
-    return match
-      ? `https://open.spotify.com/embed/${match[1]}/${match[2]}`
-      : null;
-  } catch {
-    return null;
-  }
-}
-export const intakeSchema = z
-  .object({
+export const sessionPlanOptions = [
+  "Create a new original song",
+  "Present and develop an existing song",
+  "Create a cover or reinterpretation",
+  "Not sure yet — discuss together",
+] as const;
+const intakeFieldsSchema = z.object({
     artist_name: z
       .string()
       .trim()
@@ -54,25 +43,13 @@ export const intakeSchema = z
     format_type: formatSchema,
     linktree_url: link,
     press_kit_url: optionalLink,
-    spotify_embed_url: text(1000).refine(
-      (v) => spotifyEmbed(v) !== null,
-      "Use an artist, album, track, or playlist link from open.spotify.com.",
-    ),
-    short_bio: z
-      .string()
-      .trim()
-      .min(1, "Add a short introduction.")
-      .max(3000)
-      .refine(
-        (v) => v.split(/\s+/).filter(Boolean).length <= 100,
-        "Keep your bio to 100 words.",
-      ),
     redirected_moment: text(),
     feature_promotion_focus: text(),
     musical_inspirations: text(),
     musical_roles: z.array(z.enum(roleOptions)).max(6).default([]),
+    other_musical_role: text(120),
     creative_superpower: text(),
-    collaboration_style: text(),
+    session_plan: z.union([z.literal(""), z.enum(sessionPlanOptions)]).default(""),
     technical_preferences: text(),
     backstage_location: text(500),
     backstage_access: text(),
@@ -84,8 +61,23 @@ export const intakeSchema = z
     test_acknowledged: z.literal(true, {
       error: "Please acknowledge this is a test.",
     }),
-  })
-  .strict();
+  }).strict();
+export const profileStepSchema = intakeFieldsSchema.pick({
+  artist_name: true,
+  government_name: true,
+  email: true,
+  linktree_url: true,
+  press_kit_url: true,
+});
+export const intakeSchema = intakeFieldsSchema
+  .superRefine((value, ctx) => {
+    if (value.format_type === "Sessions" && value.musical_roles.length === 0)
+      ctx.addIssue({ code: "custom", path: ["musical_roles"], message: "Choose at least one musical role." });
+    if (value.musical_roles.includes("Other") && !value.other_musical_role)
+      ctx.addIssue({ code: "custom", path: ["other_musical_role"], message: "Tell us what your other musical role is." });
+    if (value.format_type === "Sessions" && !value.session_plan)
+      ctx.addIssue({ code: "custom", path: ["session_plan"], message: "Choose how you would like to approach the song." });
+  });
 export type Intake = z.infer<typeof intakeSchema>;
 export type Format = z.infer<typeof formatSchema>;
 export type Invite = {
@@ -128,16 +120,16 @@ export type Artist = Omit<Intake, "test_acknowledged"> & {
   referral_code: string;
   membership_tier: "cohort" | "alumni";
   alumni_subscription_status: "inactive" | "active" | "canceled";
+  media_uploads: MediaUpload[];
 };
+export type MediaUpload = { path: string; name: string; type: string; size: number };
 export type PublicArtist = Pick<
   Artist,
   | "id"
   | "artist_name"
   | "format_type"
   | "season_number"
-  | "short_bio"
   | "linktree_url"
-  | "spotify_embed_url"
 >;
 export const inviteSchema = z
   .object({
@@ -167,9 +159,7 @@ export function publicProfile(a: Artist): PublicArtist {
     artist_name: a.artist_name,
     format_type: a.format_type,
     season_number: a.season_number,
-    short_bio: a.short_bio,
     linktree_url: a.linktree_url,
-    spotify_embed_url: a.spotify_embed_url,
   };
 }
 export function canPublish(a: Artist) {
@@ -183,12 +173,12 @@ export function canPublish(a: Artist) {
 export function cleanIntake(value: Intake): Intake {
   return {
     ...value,
-    spotify_embed_url: spotifyEmbed(value.spotify_embed_url) || "",
     ...(value.format_type === "Backstage"
       ? {
           musical_roles: [],
+          other_musical_role: "",
           creative_superpower: "",
-          collaboration_style: "",
+          session_plan: "" as const,
           technical_preferences: "",
         }
       : {

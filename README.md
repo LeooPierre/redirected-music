@@ -29,7 +29,7 @@ Open http://127.0.0.1:3000/admin. The demo has two sample invitation links: Sess
 - `app/invite/[token]`: private guest form with Sessions / Backstage routing.
 - `app/admin`: private production desk; `/admin/login` authenticates the administrator.
 - `app/artists`: public directory and individual profiles; reads only the public projection.
-- `app/api/artists/route.ts`: validated, single-use invitation submission endpoint.
+- `app/api/artists/route.ts`: validated, single-use invitation submission and private media-upload endpoint.
 - `app/api/admin`: authenticated invite creation/revocation and guest updates.
 - `lib/models.ts`: input validation and public field allowlist.
 - `lib/store.ts`: Supabase / local-demo adapters.
@@ -52,6 +52,7 @@ Tests use PGlite (a local PostgreSQL engine), not a hosted Supabase account. Web
 ## Known boundaries
 
 - All issued invitations are **test** invitations. Legal release wording and a separately reviewed live-consent flow are required before genuine publication. Test acknowledgements are never release consent.
+- Guests must provide either a private photos/press-kit link or up to 10 supported uploads. Uploaded files use the private `guest-media` Supabase Storage bucket and are exposed only to the authenticated administrator through short-lived links.
 - Cal.com displays real availability only after `CAL_EVENT_URL` is configured outside local demo mode. No webhook sync yet: confirm bookings in Cal.com and record the confirmed shoot date in the dashboard. A recorded guest skips scheduling.
 - Invitations are bearer links: anyone possessing a link can submit it once. Only the admin can create links. They are not identity-verified; email OTP can be added if stricter recipient binding is needed.
 - Membership/referral columns are placeholders for a later phase, with no billing, payouts or tracking implemented.
